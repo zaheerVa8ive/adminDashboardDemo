@@ -4,9 +4,11 @@ import {TextFieldFormsy} from '@fuse';
 import Formsy from 'formsy-react';
 import * as authActions from 'app/auth/store/actions';
 import {useDispatch, useSelector} from 'react-redux';
+import { useHistory } from "react-router-dom";
 
 function JWTLoginTab(props)
 {
+    let history = useHistory();
     const dispatch = useDispatch();
     const login = useSelector(({auth}) => auth.login);
 
@@ -35,7 +37,9 @@ function JWTLoginTab(props)
 
     function handleSubmit(model)
     {
-        dispatch(authActions.submitLogin(model));
+        dispatch(authActions.submitLogin(model)).then(() =>
+            history.push("/")
+        );
     }
 
     return (
@@ -52,7 +56,7 @@ function JWTLoginTab(props)
                     type="text"
                     name="email"
                     label="Username/Email"
-                    value="admin"
+                    value="testing6@mux.life"
                     validations={{
                         minLength: 4
                     }}
@@ -71,7 +75,7 @@ function JWTLoginTab(props)
                     type="password"
                     name="password"
                     label="Password"
-                    value="admin"
+                    value="123456789"
                     validations={{
                         minLength: 4
                     }}
@@ -98,36 +102,6 @@ function JWTLoginTab(props)
                 </Button>
 
             </Formsy>
-
-            <div className="flex flex-col items-center pt-24">
-                <Typography className="text-14 font-600 py-8">
-                    Credentials
-                </Typography>
-
-                <Divider className="mb-16 w-256"/>
-
-                <table className="text-left w-256">
-                    <thead>
-                        <tr>
-                            <th><Typography className="font-600" color="textSecondary">Role</Typography></th>
-                            <th><Typography className="font-600" color="textSecondary">Username</Typography></th>
-                            <th><Typography className="font-600" color="textSecondary">Password</Typography></th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        <tr>
-                            <td><Typography>Admin</Typography></td>
-                            <td><Typography>admin</Typography></td>
-                            <td><Typography>admin</Typography></td>
-                        </tr>
-                        <tr>
-                            <td><Typography>Staff</Typography></td>
-                            <td><Typography>staff</Typography></td>
-                            <td><Typography>staff</Typography></td>
-                        </tr>
-                    </tbody>
-                </table>
-            </div>
 
         </div>
     );

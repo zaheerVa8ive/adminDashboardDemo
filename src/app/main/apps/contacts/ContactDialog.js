@@ -3,29 +3,55 @@ import {TextField, Button, Dialog, DialogActions, DialogContent, Icon, IconButto
 import {useForm} from '@fuse/hooks';
 import FuseUtils from '@fuse/FuseUtils';
 import * as Actions from './store/actions';
+import { makeStyles } from '@material-ui/core/styles';
+import InputLabel from '@material-ui/core/InputLabel';
+import Select from '@material-ui/core/Select';
+import DeleteIcon from '@material-ui/icons/Delete';
+import SaveIcon from '@material-ui/icons/Save';
 import {useDispatch, useSelector} from 'react-redux';
+import MenuItem from '@material-ui/core/MenuItem';
 
 const defaultFormState = {
-    id      : '',
-    name    : '',
-    lastName: '',
-    avatar  : 'assets/images/avatars/profile.jpg',
-    nickname: '',
-    company : '',
-    jobTitle: '',
-    email   : '',
-    phone   : '',
-    address : '',
-    birthday: '',
-    notes   : ''
+    customerId    : '',
+    macAddress: '',
+    serialNo  : '',
+    active: '',
+    billingAddress : '',
+    price: '',
+    tax   : ''
 };
+
+const useStyles = makeStyles(theme => ({
+        formControl: {
+          margin: theme.spacing(1),
+          minWidth: 120,
+        },
+        selectEmpty: {
+          marginTop: theme.spacing(2),
+        },
+        label:{
+            width:"30%"
+        },
+        divClass:{
+            width:"90%"
+        },
+        textClass:{
+            width:"70%"
+        },
+        button: {
+            margin: theme.spacing(1),
+          },
+    }));
 
 function ContactDialog(props)
 {
     const dispatch = useDispatch();
+    const classes = useStyles();
     const contactDialog = useSelector(({contactsApp}) => contactsApp.contacts.contactDialog);
 
     const {form, handleChange, setForm} = useForm(defaultFormState);
+
+    console.log("contactDialog",contactDialog)
 
     const initDialog = useCallback(
         () => {
@@ -45,7 +71,7 @@ function ContactDialog(props)
                 setForm({
                     ...defaultFormState,
                     ...contactDialog.data,
-                    id: FuseUtils.generateGUID()
+                    // id: FuseUtils.generateGUID()
                 });
             }
         },
@@ -81,7 +107,12 @@ function ContactDialog(props)
 
         if ( contactDialog.type === 'new' )
         {
-            dispatch(Actions.addContact(form));
+            dispatch(Actions.addContact(form)).then(() =>{
+                setForm({
+                    ...defaultFormState,
+                    ...contactDialog.data
+                });
+            });
         }
         else
         {
@@ -95,6 +126,17 @@ function ContactDialog(props)
         dispatch(Actions.removeContact(form.id));
         closeComposeDialog();
     }
+    let divParent = `flex ${classes.divClass}`;
+    let fieldParent = `mb-24 ${classes.textClass}`;
+    const actives = [
+        {'id':1,'value':'False'},
+        {'id':2,'value':'True'},
+    ];
+    const active = actives.map(act => (
+        <MenuItem key={act.id} value={act.value}>
+            {act.value}
+        </MenuItem>
+    ));
 
     return (
         <Dialog
@@ -113,214 +155,183 @@ function ContactDialog(props)
                         {contactDialog.type === 'new' ? 'New Contact' : 'Edit Contact'}
                     </Typography>
                 </Toolbar>
-                <div className="flex flex-col items-center justify-center pb-24">
-                    <Avatar className="w-96 h-96" alt="contact avatar" src={form.avatar}/>
-                    {contactDialog.type === 'edit' && (
-                        <Typography variant="h6" color="inherit" className="pt-8">
-                            {form.name}
-                        </Typography>
-                    )}
-                </div>
             </AppBar>
             <form noValidate onSubmit={handleSubmit} className="flex flex-col md:overflow-hidden">
                 <DialogContent classes={{root: "p-24"}}>
-                    <div className="flex">
-                        <div className="min-w-48 pt-20">
-                            <Icon color="action">account_circle</Icon>
-                        </div>
-
-                        <TextField
-                            className="mb-24"
-                            label="Name"
-                            autoFocus
-                            id="name"
-                            name="name"
-                            value={form.name}
-                            onChange={handleChange}
-                            variant="outlined"
-                            required
-                            fullWidth
-                        />
+                    <div className={divParent} >
+                        <div className={classes.label}>
+                                <InputLabel >Customer Id</InputLabel>
+                            </div>
+                        <div className={fieldParent}>
+                            <TextField
+                                className="mb-24"
+                                id="customerId"
+                                autoFocus
+                                name="customerId"
+                                value={form.customerId}
+                                onChange={handleChange}
+                                variant="outlined"
+                                fullWidth
+                            />
+                         </div>
                     </div>
 
-                    <div className="flex">
-                        <div className="min-w-48 pt-20">
-                        </div>
-                        <TextField
-                            className="mb-24"
-                            label="Last name"
-                            id="lastName"
-                            name="lastName"
-                            value={form.lastName}
-                            onChange={handleChange}
-                            variant="outlined"
-                            fullWidth
-                        />
+                    <div className={divParent} >
+                        <div className={classes.label}>
+                                <InputLabel >Mac Address</InputLabel>
+                            </div>
+                        <div className={fieldParent}>
+                            <TextField
+                                className="mb-24"
+                                id="macAddress"
+                                autoFocus
+                                name="macAddress"
+                                value={form.macAddress}
+                                onChange={handleChange}
+                                variant="outlined"
+                                fullWidth
+                            />
+                         </div>
                     </div>
 
-                    <div className="flex">
-                        <div className="min-w-48 pt-20">
-                            <Icon color="action">star</Icon>
-                        </div>
-                        <TextField
-                            className="mb-24"
-                            label="Nickname"
-                            id="nickname"
-                            name="nickname"
-                            value={form.nickname}
-                            onChange={handleChange}
-                            variant="outlined"
-                            fullWidth
-                        />
+                    <div className={divParent} >
+                        <div className={classes.label}>
+                                <InputLabel >Serial No</InputLabel>
+                            </div>
+                        <div className={fieldParent}>
+                            <TextField
+                                className="mb-24"
+                                id="serialNo"
+                                autoFocus
+                                name="serialNo"
+                                value={form.serialNo}
+                                onChange={handleChange}
+                                variant="outlined"
+                                fullWidth
+                            />
+                         </div>
                     </div>
 
-                    <div className="flex">
-                        <div className="min-w-48 pt-20">
-                            <Icon color="action">phone</Icon>
-                        </div>
-                        <TextField
-                            className="mb-24"
-                            label="Phone"
-                            id="phone"
-                            name="phone"
-                            value={form.phone}
-                            onChange={handleChange}
-                            variant="outlined"
-                            fullWidth
-                        />
+                    <div className={divParent} >
+                        <div className={classes.label}>
+                                <InputLabel >Active</InputLabel>
+                            </div>
+                        <div className={fieldParent}>
+                            <Select
+                                className="mb-24"
+                                autoFocus
+                                id="active"
+                                name="active"
+                                value={form.active}
+                                fullWidth
+                                variant="outlined"
+                                onChange={handleChange}
+                                >
+                                {active}
+                            </Select>
+                         </div>
                     </div>
 
-                    <div className="flex">
-                        <div className="min-w-48 pt-20">
-                            <Icon color="action">email</Icon>
-                        </div>
-                        <TextField
-                            className="mb-24"
-                            label="Email"
-                            id="email"
-                            name="email"
-                            value={form.email}
-                            onChange={handleChange}
-                            variant="outlined"
-                            fullWidth
-                        />
+                    <div className={divParent} >
+                        <div className={classes.label}>
+                                <InputLabel >Billing Address</InputLabel>
+                            </div>
+                        <div className={fieldParent}>
+                            <TextField
+                                className="mb-24"
+                                id="billingAddress"
+                                autoFocus
+                                name="billingAddress"
+                                value={form.billingAddress}
+                                onChange={handleChange}
+                                variant="outlined"
+                                fullWidth
+                            />
+                         </div>
                     </div>
 
-                    <div className="flex">
-                        <div className="min-w-48 pt-20">
-                            <Icon color="action">domain</Icon>
-                        </div>
-                        <TextField
-                            className="mb-24"
-                            label="Company"
-                            id="company"
-                            name="company"
-                            value={form.company}
-                            onChange={handleChange}
-                            variant="outlined"
-                            fullWidth
-                        />
+                    <div className={divParent} >
+                        <div className={classes.label}>
+                                <InputLabel >Price</InputLabel>
+                            </div>
+                        <div className={fieldParent}>
+                            <TextField
+                                className="mb-24"
+                                id="price"
+                                autoFocus
+                                name="price"
+                                value={form.price}
+                                onChange={handleChange}
+                                variant="outlined"
+                                fullWidth
+                            />
+                         </div>
                     </div>
 
-                    <div className="flex">
-                        <div className="min-w-48 pt-20">
-                            <Icon color="action">work</Icon>
-                        </div>
-                        <TextField
-                            className="mb-24"
-                            label="Job title"
-                            id="jobTitle"
-                            name="jobTitle"
-                            value={form.jobTitle}
-                            onChange={handleChange}
-                            variant="outlined"
-                            fullWidth
-                        />
-                    </div>
-
-                    <div className="flex">
-                        <div className="min-w-48 pt-20">
-                            <Icon color="action">cake</Icon>
-                        </div>
-                        <TextField
-                            className="mb-24"
-                            id="birthday"
-                            label="Birthday"
-                            type="date"
-                            value={form.birthday}
-                            onChange={handleChange}
-                            InputLabelProps={{
-                                shrink: true
-                            }}
-                            variant="outlined"
-                            fullWidth
-                        />
-                    </div>
-
-                    <div className="flex">
-                        <div className="min-w-48 pt-20">
-                            <Icon color="action">home</Icon>
-                        </div>
-                        <TextField
-                            className="mb-24"
-                            label="Address"
-                            id="address"
-                            name="address"
-                            value={form.address}
-                            onChange={handleChange}
-                            variant="outlined"
-                            fullWidth
-                        />
-                    </div>
-
-                    <div className="flex">
-                        <div className="min-w-48 pt-20">
-                            <Icon color="action">note</Icon>
-                        </div>
-                        <TextField
-                            className="mb-24"
-                            label="Notes"
-                            id="notes"
-                            name="notes"
-                            value={form.notes}
-                            onChange={handleChange}
-                            variant="outlined"
-                            multiline
-                            rows={5}
-                            fullWidth
-                        />
+                    <div className={divParent} >
+                        <div className={classes.label}>
+                                <InputLabel >Tax</InputLabel>
+                            </div>
+                        <div className={fieldParent}>
+                            <TextField
+                                className="mb-24"
+                                id="tax"
+                                autoFocus
+                                name="tax"
+                                value={form.tax}
+                                onChange={handleChange}
+                                variant="outlined"
+                                fullWidth
+                            />
+                         </div>
                     </div>
                 </DialogContent>
 
                 {contactDialog.type === 'new' ? (
-                    <DialogActions className="justify-between pl-16">
-                        <Button
-                            variant="contained"
-                            color="primary"
-                            onClick={handleSubmit}
-                            type="submit"
-                            disabled={!canBeSubmitted()}
-                        >
-                            Add
-                        </Button>
-                    </DialogActions>
-                ) : (
-                    <DialogActions className="justify-between pl-16">
+                    <div className={divParent}>
+                        <div className={classes.label}>
+                        </div>
+                        <div className={fieldParent}>
                         <Button
                             variant="contained"
                             color="primary"
                             type="submit"
+                            className={classes.button}
                             onClick={handleSubmit}
-                            disabled={!canBeSubmitted()}
+                            // disabled={!canBeSubmitted()}
+                            startIcon={<SaveIcon />}
                         >
                             Save
                         </Button>
-                        <IconButton
-                            onClick={handleRemove}
+                        </div>
+                    </div>
+                ) : (
+                    <div className={divParent}>
+                        <div className={classes.label}>
+                        </div>
+                        <div className={fieldParent}>
+                        <Button
+                            variant="contained"
+                            color="primary"
+                            type="submit"
+                            className={classes.button}
+                            onClick={handleSubmit}
+                            // disabled={!canBeSubmitted()}
+                            startIcon={<SaveIcon />}
                         >
-                            <Icon>delete</Icon>
-                        </IconButton>
-                    </DialogActions>
+                             Save
+                        </Button>
+                        <Button
+                            variant="contained"
+                            color="secondary"
+                            className={classes.button}
+                            onClick={handleRemove}
+                            startIcon={<DeleteIcon />}
+                        >
+                            Delete
+                        </Button>
+                        </div>
+                    </div>
                 )}
             </form>
         </Dialog>

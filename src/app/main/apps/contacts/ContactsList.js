@@ -49,97 +49,57 @@ function ContactsList(props)
             </div>
         );
     }
+    filteredData.map(contact => {
+        contact['active'] = ( contact['active'] == true ? "True" : "False" );
+        contact['key'] = contact['objectId'];
+        contact['statusTime'] = new Date(contact['statustime']['iso']).toGMTString();
+        contact['userName'] = contact['user']['className'];
+        return contact
+    });
+
+    console.log("filteredData",filteredData);
 
     return (
         <FuseAnimate animation="transition.slideUpIn" delay={300}>
             <ReactTable
                 className="-striped -highlight h-full sm:rounded-16 overflow-hidden"
-                getTrProps={(state, rowInfo, column) => {
-                    return {
-                        className: "cursor-pointer",
-                        onClick  : (e, handleOriginal) => {
-                            if ( rowInfo )
-                            {
-                                dispatch(Actions.openEditContactDialog(rowInfo.original));
-                            }
-                        }
-                    }
-                }}
                 data={filteredData}
                 columns={[
                     {
-                        Header   : () => (
-                            <Checkbox
-                                onClick={(event) => {
-                                    event.stopPropagation();
-                                }}
-                                onChange={(event) => {
-                                    event.target.checked ? dispatch(Actions.selectAllContacts()) : dispatch(Actions.deSelectAllContacts());
-                                }}
-                                checked={selectedContactIds.length === Object.keys(contacts).length && selectedContactIds.length > 0}
-                                indeterminate={selectedContactIds.length !== Object.keys(contacts).length && selectedContactIds.length > 0}
-                            />
-                        ),
-                        accessor : "",
-                        Cell     : row => {
-                            return (<Checkbox
-                                    onClick={(event) => {
-                                        event.stopPropagation();
-                                    }}
-                                    checked={selectedContactIds.includes(row.value.id)}
-                                    onChange={() => dispatch(Actions.toggleInSelectedContacts(row.value.id))}
-                                />
-                            )
-                        },
-                        className: "justify-center",
-                        sortable : false,
-                        width    : 64
+                        Header    : "Customer Id",
+                        accessor  : "customerId"
                     },
                     {
-                        Header   : () => (
-                            selectedContactIds.length > 0 && (
-                                <ContactsMultiSelectMenu/>
-                            )
-                        ),
-                        accessor : "avatar",
-                        Cell     : row => (
-                            <Avatar className="mr-8" alt={row.original.name} src={row.value}/>
-                        ),
-                        className: "justify-center",
-                        width    : 64,
-                        sortable : false
+                        Header    : "Mac Address",
+                        accessor  : "macAddress"
                     },
                     {
-                        Header    : "First Name",
-                        accessor  : "name",
-                        filterable: true,
-                        className : "font-bold"
+                        Header    : "Serial No",
+                        accessor  : "serialNo"
                     },
                     {
-                        Header    : "Last Name",
-                        accessor  : "lastName",
-                        filterable: true,
-                        className : "font-bold"
+                        Header    : "Active",
+                        accessor  : "active"
                     },
                     {
-                        Header    : "Company",
-                        accessor  : "company",
-                        filterable: true
+                        Header    : "Billing Address",
+                        accessor  : "billingAddress"
                     },
                     {
-                        Header    : "Job Title",
-                        accessor  : "jobTitle",
-                        filterable: true
+                        Header    : "Status Time",
+                        accessor  : "statusTime"
                     },
                     {
-                        Header    : "Email",
-                        accessor  : "email",
-                        filterable: true
+                        Header    : "Price",
+                        accessor  : "price"
                     },
                     {
-                        Header    : "Phone",
-                        accessor  : "phone",
-                        filterable: true
+                        Header    : "Tax",
+                        accessor  : "tax"
+                    },
+                    {
+                        Header    : "User",
+                        accessor  : "userName"
                     },
                     {
                         Header: "",
@@ -149,15 +109,19 @@ function ContactsList(props)
                                 <IconButton
                                     onClick={(ev) => {
                                         ev.stopPropagation();
-                                        dispatch(Actions.toggleStarredContact(row.original.id))
+                                        dispatch(Actions.openEditContactDialog(row.original));
                                     }}
                                 >
-                                    {user.starred && user.starred.includes(row.original.id) ? (
-                                        <Icon>star</Icon>
-                                    ) : (
-                                        <Icon>star_border</Icon>
-                                    )}
+                                    <Icon>edit</Icon>
                                 </IconButton>
+                            </div>
+                        )
+                    },
+                    {
+                        Header: "",
+                        width : 128,
+                        Cell  : row => (
+                            <div className="flex items-center">
                                 <IconButton
                                     onClick={(ev) => {
                                         ev.stopPropagation();

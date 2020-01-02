@@ -19,9 +19,11 @@ class FuseAuthorization extends Component {
 
     componentDidMount()
     {
-        if ( !this.state.accessGranted )
-        {
-            this.redirectRoute();
+        let user = localStorage.getItem('user');
+        if (!user){
+            this.props.history.push('/login');
+        } else {
+            this.props.history.push('/');
         }
     }
 

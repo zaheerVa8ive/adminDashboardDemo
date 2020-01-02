@@ -1,4 +1,5 @@
 import axios from 'axios';
+import _ from '@lodash';
 import {getUserData} from 'app/main/apps/contacts/store/actions/user.actions';
 
 export const GET_CONTACTS = '[CONTACTS APP] GET CONTACTS';
@@ -17,22 +18,44 @@ export const REMOVE_CONTACTS = '[CONTACTS APP] REMOVE CONTACTS';
 export const TOGGLE_STARRED_CONTACT = '[CONTACTS APP] TOGGLE STARRED CONTACT';
 export const TOGGLE_STARRED_CONTACTS = '[CONTACTS APP] TOGGLE STARRED CONTACTS';
 export const SET_CONTACTS_STARRED = '[CONTACTS APP] SET CONTACTS STARRED ';
+axios.defaults.headers = {
+    'Content-Type': 'application/json',
+    'X-Parse-Application-Id': 'lJ42aRr2G5yuP2lIqV94Cupx58EBP0eFLdstkIz1',
+    'X-Parse-REST-API-Key':'tb7URXifVfbE8fWCDhT80lJQaL4FuTLzIg5vadTD'
+  };
+
+// export function getContacts(routeParams)
+// {
+//     const request = axios.get('/api/contacts-app/contacts', {
+//         params: routeParams
+//     });
+
+//     return (dispatch) =>
+//         request.then((response) => {
+//             console.log("response",response);
+//             dispatch({
+//                 type   : GET_CONTACTS,
+//                 payload: response.data,
+//                 routeParams
+//             })
+//         });
+// }
 
 export function getContacts(routeParams)
 {
-    const request = axios.get('/api/contacts-app/contacts', {
-        params: routeParams
-    });
+    const request = axios.get('https://api.mux.life/api/classes/AuthenticDevices');
 
     return (dispatch) =>
-        request.then((response) =>
+        request.then((response) => {
+            console.log("response",response.data.results);
             dispatch({
                 type   : GET_CONTACTS,
-                payload: response.data,
+                payload: response.data.results,
                 routeParams
             })
-        );
+        });
 }
+
 
 export function setSearchText(event)
 {
@@ -98,18 +121,29 @@ export function addContact(newContact)
     return (dispatch, getState) => {
 
         const {routeParams} = getState().contactsApp.contacts;
+        let user = JSON.parse(localStorage.getItem('user'));
+        console.log("user",user);
+        let payload = _.clone(newContact);
+        payload['user'] = {
+          '__type': 'Pointer',
+          'className': '_User',
+          'objectId':user['objectId']
+        };
+        payload['statustime'] = {"__type":"Date","iso":(new Date()).toISOString()};
+        payload['active'] = (payload['active'] == "false" ? false : true);
+        payload['price'] = Number(payload['price']);
+        payload['tax'] = Number(payload['tax']);
+        console.log("payload",payload);
+        const request = axios.post('https://api.mux.life/api/classes/AuthenticDevices', JSON.stringify(payload));
 
-        const request = axios.post('/api/contacts-app/add-contact', {
-            newContact
-        });
-
-        return request.then((response) =>
+        return request.then((response) => {
+            console.log("140 , response",response)
             Promise.all([
                 dispatch({
                     type: ADD_CONTACT
                 })
             ]).then(() => dispatch(getContacts(routeParams)))
-        );
+        });
     };
 }
 
