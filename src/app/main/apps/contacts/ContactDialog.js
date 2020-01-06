@@ -123,7 +123,7 @@ function ContactDialog(props)
 
     function handleRemove()
     {
-        dispatch(Actions.removeContact(form.id));
+        dispatch(Actions.removeContact(form));
         closeComposeDialog();
     }
     let divParent = `flex ${classes.divClass}`;
@@ -157,6 +157,7 @@ function ContactDialog(props)
                 </Toolbar>
             </AppBar>
             <form noValidate onSubmit={handleSubmit} className="flex flex-col md:overflow-hidden">
+            {contactDialog.type === 'new' ? (
                 <DialogContent classes={{root: "p-24"}}>
                     <div className={divParent} >
                         <div className={classes.label}>
@@ -286,8 +287,33 @@ function ContactDialog(props)
                          </div>
                     </div>
                 </DialogContent>
+            ):(
+                <DialogContent classes={{root: "p-24"}}>
+                    <div className={divParent} >
+                        <div className={classes.label}>
+                                <InputLabel >Active</InputLabel>
+                            </div>
+                        <div className={fieldParent}>
+                            <Select
+                                className="mb-24"
+                                autoFocus
+                                id="active"
+                                name="active"
+                                value={form.active}
+                                fullWidth
+                                variant="outlined"
+                                onChange={handleChange}
+                                >
+                                {active}
+                            </Select>
+                         </div>
+                    </div>
+                </DialogContent>
 
+            )}
+                
                 {contactDialog.type === 'new' ? (
+                    
                     <div className={divParent}>
                         <div className={classes.label}>
                         </div>

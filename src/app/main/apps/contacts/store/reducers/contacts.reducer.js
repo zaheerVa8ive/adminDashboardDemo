@@ -4,6 +4,7 @@ import _ from '@lodash';
 const initialState = {
     entities          : null,
     searchText        : '',
+    fileData : [],
     selectedContactIds: [],
     routeParams       : {},
     contactDialog     : {
@@ -123,6 +124,20 @@ const contactsReducer = function (state = initialState, action) {
                     },
                     data : null
                 }
+            };
+        }
+        case Actions.SET_EXCELL_FILE_DATA:
+        {
+            return {
+                ...state,
+                fileData : action.data,
+            };
+        }
+        case Actions.SET_EXCELL_FILE_DATA:
+        {
+            return {
+                ...state,
+                fileData : action.data,
             };
         }
         default:

@@ -52,8 +52,8 @@ function ContactsList(props)
     filteredData.map(contact => {
         contact['active'] = ( contact['active'] == true ? "True" : "False" );
         contact['key'] = contact['objectId'];
-        contact['statusTime'] = new Date(contact['statustime']['iso']).toGMTString();
-        contact['userName'] = contact['user']['className'];
+        contact['statusTime'] = new Date(contact['updatedAt']).toGMTString();
+        contact['userName'] = contact['updatedBy']['firstName'] +' '+ contact['updatedBy']['lastName'];
         return contact
     });
 
@@ -125,7 +125,7 @@ function ContactsList(props)
                                 <IconButton
                                     onClick={(ev) => {
                                         ev.stopPropagation();
-                                        dispatch(Actions.removeContact(row.original.id));
+                                        dispatch(Actions.removeContact(row.original));
                                     }}
                                 >
                                     <Icon>delete</Icon>

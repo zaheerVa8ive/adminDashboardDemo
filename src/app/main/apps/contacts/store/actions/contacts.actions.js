@@ -11,6 +11,8 @@ export const OPEN_NEW_CONTACT_DIALOG = '[CONTACTS APP] OPEN NEW CONTACT DIALOG';
 export const CLOSE_NEW_CONTACT_DIALOG = '[CONTACTS APP] CLOSE NEW CONTACT DIALOG';
 export const OPEN_EDIT_CONTACT_DIALOG = '[CONTACTS APP] OPEN EDIT CONTACT DIALOG';
 export const CLOSE_EDIT_CONTACT_DIALOG = '[CONTACTS APP] CLOSE EDIT CONTACT DIALOG';
+export const SET_EXCELL_FILE_DATA = '[CONTACTS APP] SET EXCELL FILE DATA';
+export const GET_EXCELL_FILE_DATA = '[CONTACTS APP] GET EXCELL FILE DATA';
 export const ADD_CONTACT = '[CONTACTS APP] ADD CONTACT';
 export const UPDATE_CONTACT = '[CONTACTS APP] UPDATE CONTACT';
 export const REMOVE_CONTACT = '[CONTACTS APP] REMOVE CONTACT';
@@ -18,32 +20,16 @@ export const REMOVE_CONTACTS = '[CONTACTS APP] REMOVE CONTACTS';
 export const TOGGLE_STARRED_CONTACT = '[CONTACTS APP] TOGGLE STARRED CONTACT';
 export const TOGGLE_STARRED_CONTACTS = '[CONTACTS APP] TOGGLE STARRED CONTACTS';
 export const SET_CONTACTS_STARRED = '[CONTACTS APP] SET CONTACTS STARRED ';
+const url = 'https://2441333b.ngrok.io';
 axios.defaults.headers = {
     'Content-Type': 'application/json',
     'X-Parse-Application-Id': 'lJ42aRr2G5yuP2lIqV94Cupx58EBP0eFLdstkIz1',
     'X-Parse-REST-API-Key':'tb7URXifVfbE8fWCDhT80lJQaL4FuTLzIg5vadTD'
   };
 
-// export function getContacts(routeParams)
-// {
-//     const request = axios.get('/api/contacts-app/contacts', {
-//         params: routeParams
-//     });
-
-//     return (dispatch) =>
-//         request.then((response) => {
-//             console.log("response",response);
-//             dispatch({
-//                 type   : GET_CONTACTS,
-//                 payload: response.data,
-//                 routeParams
-//             })
-//         });
-// }
-
 export function getContacts(routeParams)
 {
-    const request = axios.get('https://api.mux.life/api/classes/AuthenticDevices');
+    const request = axios.get(`${url}/api/classes/AuthenticDevices?include=updatedBy&where={"isDelete":false}`);
 
     return (dispatch) =>
         request.then((response) => {
@@ -116,6 +102,14 @@ export function closeEditContactDialog()
     }
 }
 
+export function setExcellFileData(data)
+{
+    return {
+        type: SET_EXCELL_FILE_DATA,
+        data
+    }
+}
+
 export function addContact(newContact)
 {
     return (dispatch, getState) => {
@@ -124,17 +118,22 @@ export function addContact(newContact)
         let user = JSON.parse(localStorage.getItem('user'));
         console.log("user",user);
         let payload = _.clone(newContact);
-        payload['user'] = {
+        payload['createdBy'] = {
           '__type': 'Pointer',
           'className': '_User',
           'objectId':user['objectId']
         };
-        payload['statustime'] = {"__type":"Date","iso":(new Date()).toISOString()};
-        payload['active'] = (payload['active'] == "false" ? false : true);
+        payload['updatedBy'] = {
+            '__type': 'Pointer',
+            'className': '_User',
+            'objectId':user['objectId']
+        };
+        payload['active'] = (payload['active'] == "False" ? false : true);
         payload['price'] = Number(payload['price']);
         payload['tax'] = Number(payload['tax']);
+        payload['isDelete'] = false;
         console.log("payload",payload);
-        const request = axios.post('https://api.mux.life/api/classes/AuthenticDevices', JSON.stringify(payload));
+        const request = axios.post(`${url}/api/classes/AuthenticDevices`, JSON.stringify(payload));
 
         return request.then((response) => {
             console.log("140 , response",response)
@@ -143,6 +142,62 @@ export function addContact(newContact)
                     type: ADD_CONTACT
                 })
             ]).then(() => dispatch(getContacts(routeParams)))
+        }).catch(error => {
+            console.log("error -----> : ",error.response);
+            var message = error.response.data.error;
+            console.log("message",message);
+        });
+    };
+}
+
+export function saveProductsFromExcell (data){
+    console.log("data",data);
+    return (dispatch, getState) => {
+
+        const {routeParams} = getState().contactsApp.contacts;
+        let user = JSON.parse(localStorage.getItem('user'));
+        let payLoads = [];
+        for (var j =0;  j <data.length ; j++){
+            let payload = {
+                'createdBy':{
+                    '__type': 'Pointer',
+                    'className': '_User',
+                    'objectId':user['objectId']
+                },
+                'updatedBy':{
+                    '__type': 'Pointer',
+                    'className': '_User',
+                    'objectId':user['objectId']
+                },
+                'customerId':data[j][0],
+                'macAddress':data[j][1],
+                'serialNo':data[j][2],
+                'active':data[j][3],
+                'billingAddress':data[j][4],
+                'price':Number(data[j][5]),
+                'tax':Number(data[j][6]),
+                'isDelete':false
+            };
+            payLoads.push({
+                "method": "POST",
+                "path": "/api/classes/AuthenticDevices",
+                "body":payload
+            });
+        }
+        console.log("payLoads",payLoads);
+        const request = axios.post(`${url}/api/batch`, JSON.stringify({"requests":payLoads}));
+
+        return request.then((response) => {
+            console.log("140 , response",response)
+            Promise.all([
+                dispatch({
+                    type: ADD_CONTACT
+                })
+            ]).then(() => dispatch(getContacts(routeParams)))
+        }).catch(error => {
+            console.log("error -----> : ",error.response);
+            var message = error.response.data.error;
+            console.log("message",message);
         });
     };
 }
@@ -152,10 +207,21 @@ export function updateContact(contact)
     return (dispatch, getState) => {
 
         const {routeParams} = getState().contactsApp.contacts;
+        console.log("contact",contact);
+        let user = JSON.parse(localStorage.getItem('user'));
 
-        const request = axios.post('/api/contacts-app/update-contact', {
-            contact
-        });
+        let payloadPrim = _.clone(contact);
+        let objectId = payloadPrim['objectId'];
+        let payload = {
+            'updatedBy' : {
+                '__type': 'Pointer',
+                'className': '_User',
+                'objectId':user['objectId']
+            },
+            'active':(payloadPrim['active'] == "False" ? false : true)
+        }
+        
+        const request = axios.put(`${url}/api/classes/AuthenticDevices/${objectId}`, JSON.stringify(payload));
 
         return request.then((response) =>
             Promise.all([
@@ -167,16 +233,22 @@ export function updateContact(contact)
     };
 }
 
-export function removeContact(contactId)
+export function removeContact(contact)
 {
     return (dispatch, getState) => {
-
+        console.log("contact , Deleted : ",contact);
+        let objectId = contact['objectId'];
+        let user = JSON.parse(localStorage.getItem('user'));
+        let payload = {
+            'deletedBy' : {
+                '__type': 'Pointer',
+                'className': '_User',
+                'objectId':user['objectId']
+            },
+            'isDelete': true
+        }
         const {routeParams} = getState().contactsApp.contacts;
-
-        const request = axios.post('/api/contacts-app/remove-contact', {
-            contactId
-        });
-
+        const request = axios.put(`${url}/api/classes/AuthenticDevices/${objectId}`, JSON.stringify(payload));
         return request.then((response) =>
             Promise.all([
                 dispatch({
